@@ -24,12 +24,14 @@ def is_public_ip_ntu_range(client_ip=None):
             response.raise_for_status()
             ip_str = response.json().get("ip")
         
-        # 解析 IP 並判斷是否在台大網段內
-        current_ip = ipaddress.IPv4Address(ip_str)
-        ntu_network = ipaddress.IPv4Network("140.112.0.0/16")
-        
-        return current_ip in ntu_network
-    
+        current_ip = ipaddress.ip_address(ip_str)
+        if isinstance(current_ip, ipaddress.IPv4Address):
+            ntu_network = ipaddress.IPv4Network("140.112.0.0/16")
+            return current_ip in ntu_network
+        else:
+            ntu_network_v6 = ipaddress.IPv6Network("2001:288:2000::/36")
+            return current_ip in ntu_network_v6
+            
     except Exception as e:
         print(f"IP 檢查失敗: {e}")
         return False
@@ -158,7 +160,7 @@ def fetch_semantic_scholar_context(doi, limit=15):
         # 實作 OpenAlex 備用資料庫機制
         if len(result['references']) == 0:
             print("[警告] Semantic Scholar 找不到上游文獻 (可能受版權限制)，啟動 OpenAlex 備用資料庫...")
-            openalex_refs = fetch_openalex_fallback(doi)
+            openalex_refs = fetch_openalex_fallback(doi, limit)
             result['references'] = openalex_refs
         
         print(f"成功抓取！找到 {len(result['references'])} 篇上游文獻，{len(result['citations'])} 篇下游文獻。")
@@ -176,7 +178,7 @@ def fetch_semantic_scholar_context(doi, limit=15):
         print(f"抓取 Semantic Scholar 資料時發生錯誤: {e}")
         return None
 
-def fetch_openalex_fallback(doi):
+def fetch_openalex_fallback(doi, limit=None):
     """
     當 Semantic Scholar 無法取得 Reference 時的備用機制。
     使用 OpenAlex API 獲取上游文獻標題。
@@ -192,6 +194,9 @@ def fetch_openalex_fallback(doi):
         
         if not referenced_ids:
             return []
+            
+        if limit:
+            referenced_ids = referenced_ids[:limit]
             
         print(f"[進度] OpenAlex 找到 {len(referenced_ids)} 篇上游文獻，正在獲取標題...")
         
@@ -371,7 +376,7 @@ def analyze_papers_clustering(papers_data, focus_dimension, api_key):
         return None
         
     papers_text = ""
-    for i, p in enumerate(papers, 1):
+    for i, p in enumerate(papers_data, 1):
         abstract = p.get('abstract') or '無摘要'
         papers_text += f"[{i}] 標題: {p.get('title')}\n摘要: {abstract}\n\n"
         

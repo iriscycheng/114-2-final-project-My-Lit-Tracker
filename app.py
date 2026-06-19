@@ -184,7 +184,7 @@ with tab1:
     # 搜尋區塊
     col1, col2 = st.columns([3, 1])
     with col1:
-        search_query = st.text_input("請輸入檢索關鍵字", placeholder="例如：optogenetics cerebellum")
+        search_query = st.text_input("請輸入檢索關鍵字", placeholder="例如：optogenetics")
     with col2:
         max_results = st.number_input("抓取篇數", min_value=1, max_value=50, value=10)
         

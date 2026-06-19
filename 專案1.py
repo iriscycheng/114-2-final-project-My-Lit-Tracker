@@ -10,15 +10,19 @@ import streamlit as st
 # 加入這行「魔法指令」，讓 Python 信任連線，不強制檢查 SSL 憑證
 ssl._create_default_https_context = ssl._create_unverified_context
 
-def is_public_ip_ntu_range():
+def is_public_ip_ntu_range(client_ip=None):
     """
     檢查目前的對外 Public IP 是否屬於台大網段 (140.112.0.0/16)。
+    若傳入 client_ip，則直接驗證該 IP；否則呼叫免費 API 獲取伺服器目前的 IP。
     """
     try:
-        # 呼叫免費 API 獲取目前的 Public IP
-        response = requests.get("https://api.ipify.org?format=json", timeout=5)
-        response.raise_for_status()
-        ip_str = response.json().get("ip")
+        if client_ip:
+            ip_str = client_ip
+        else:
+            # 呼叫免費 API 獲取目前的 Public IP
+            response = requests.get("https://api.ipify.org?format=json", timeout=5)
+            response.raise_for_status()
+            ip_str = response.json().get("ip")
         
         # 解析 IP 並判斷是否在台大網段內
         current_ip = ipaddress.IPv4Address(ip_str)

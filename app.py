@@ -34,9 +34,21 @@ st.markdown("為生醫實驗室打造的文獻超級助理，結合 PubMed, Sema
 # ==========================================
 # 頂部狀態指示燈 (IP 偵測)
 # ==========================================
+def get_client_ip():
+    """取得真實使用者的 IP (優先透過 Streamlit Cloud Headers 取得)"""
+    client_ip = None
+    try:
+        if hasattr(st, "context") and hasattr(st.context, "headers"):
+            headers = st.context.headers
+            if "X-Forwarded-For" in headers:
+                client_ip = headers["X-Forwarded-For"].split(",")[0].strip()
+    except Exception:
+        pass
+    return client_ip
+
 # 使用 session_state 來快取 IP 偵測結果，避免每次重整網頁都重新檢查
 if 'is_ntu' not in st.session_state:
-    st.session_state.is_ntu = backend.is_public_ip_ntu_range()
+    st.session_state.is_ntu = backend.is_public_ip_ntu_range(get_client_ip())
 
 if st.session_state.is_ntu:
     st.success("🟢 **權限狀態**：已連線至台大網路 (140.112.*)，可存取完整學術資源！")
@@ -84,7 +96,7 @@ else:
         with col_btn:
             st.markdown('<div class="vpn-btn-marker"></div>', unsafe_allow_html=True)
             if st.button("重新偵測連線", key="reconnect_vpn_btn"):
-                st.session_state.is_ntu = backend.is_public_ip_ntu_range()
+                st.session_state.is_ntu = backend.is_public_ip_ntu_range(get_client_ip())
                 try:
                     st.rerun()
                 except AttributeError:

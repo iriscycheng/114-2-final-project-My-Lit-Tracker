@@ -92,11 +92,15 @@ else:
 
         col_err, col_btn = st.columns([5, 1])
         with col_err:
-            st.error("🔴 **權限狀態**：目前為外部網路。若遇付費文獻，請先開啟 NTU SSL VPN 以獲取全文。")
+            detected_ip = st.session_state.get('detected_ip', get_client_ip())
+            ip_display = f" ({detected_ip})" if detected_ip else ""
+            st.error(f"🔴 **權限狀態**：目前為外部網路{ip_display}。若遇付費文獻，請先開啟 NTU SSL VPN 以獲取全文。")
         with col_btn:
             st.markdown('<div class="vpn-btn-marker"></div>', unsafe_allow_html=True)
             if st.button("重新偵測連線", key="reconnect_vpn_btn"):
-                st.session_state.is_ntu = backend.is_public_ip_ntu_range(get_client_ip())
+                client_ip = get_client_ip()
+                st.session_state.detected_ip = client_ip
+                st.session_state.is_ntu = backend.is_public_ip_ntu_range(client_ip)
                 try:
                     st.rerun()
                 except AttributeError:

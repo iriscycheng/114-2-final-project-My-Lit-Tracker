@@ -1,0 +1,17 @@
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Streamlit Secrets (避免金鑰外洩)
+.streamlit/secrets.toml
+.streamlit/
+
+# 虛擬環境
+venv/
+env/
+.env
+
+# 作業系統產生的檔案
+.DS_Store
+Thumbs.db

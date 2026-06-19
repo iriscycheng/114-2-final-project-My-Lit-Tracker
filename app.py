@@ -159,7 +159,8 @@ with st.sidebar:
     except Exception:
         default_key = ""
         
-    gemini_key = st.text_input("Gemini API Key", type="password", value=default_key, placeholder="AIzaSy...")
+    gemini_key_input = st.text_input("Gemini API Key", type="password", value="", placeholder="若已在系統後端設定，可留白")
+    gemini_key = gemini_key_input if gemini_key_input else default_key
     with st.expander("填寫說明"):
         st.markdown("● **何時填寫**：欲使用「AI 語義分群」或「精準打擊」時。\n● **為什麼填**：系統需要金鑰才能啟動 Google Gemini 3.1 Pro AI 模型。([點此免費申請](https://aistudio.google.com/app/apikey))")
     
